@@ -27,7 +27,7 @@ const api = (function() {
       data: JSON.stringify(updateData),
       success: callback,
     });
-  }
+  };
 
   return {
     getItems,
