@@ -1,4 +1,5 @@
-/* global store */
+/* global store $ api */
+'use strict';
 
 // eslint-disable-next-line no-unused-vars
 const shoppingList = (function(){
@@ -46,6 +47,11 @@ const shoppingList = (function(){
       items = store.items.filter(item => item.name.includes(store.searchTerm));
     }
   
+    if (store.error) {
+      $('#err-msg').html(store.error);
+      store.error = null;
+    }
+
     // render the shopping list in the DOM
     console.log('`render` ran');
     const shoppingListItemsString = generateShoppingItemsString(items);
@@ -54,14 +60,20 @@ const shoppingList = (function(){
     $('.js-shopping-list').html(shoppingListItemsString);
   }
   
+  function handleError(jqXHR, status, errThrown) {
+    store.error = jqXHR.responseJSON.message;
+    render();
+  }
   
   function handleNewItemSubmit() {
     $('#js-shopping-list-form').submit(function (event) {
       event.preventDefault();
       const newItemName = $('.js-shopping-list-entry').val();
       $('.js-shopping-list-entry').val('');
-      store.addItem(newItemName);
-      render();
+      api.createItem(newItemName, (newItem) => {
+        store.addItem(newItem);
+        render();
+      }, handleError);
     });
   }
   
@@ -74,8 +86,12 @@ const shoppingList = (function(){
   function handleItemCheckClicked() {
     $('.js-shopping-list').on('click', '.js-item-toggle', event => {
       const id = getItemIdFromElement(event.currentTarget);
-      store.findAndToggleChecked(id);
-      render();
+      const item = store.findById(id);
+      const checked = !item.checked;
+      api.updateItem(id, {checked: checked}, data => {
+        store.findAndUpdate(id, {checked: checked});
+        render();
+      }, handleError);
     });
   }
   
@@ -84,10 +100,10 @@ const shoppingList = (function(){
     $('.js-shopping-list').on('click', '.js-item-delete', event => {
       // get the index of the item in store.items
       const id = getItemIdFromElement(event.currentTarget);
-      // delete the item
-      store.findAndDelete(id);
-      // render the updated shopping list
-      render();
+      api.deleteItem(id, data => {
+        store.findAndDelete(id);
+        render();
+      }, handleError);
     });
   }
   
@@ -96,8 +112,10 @@ const shoppingList = (function(){
       event.preventDefault();
       const id = getItemIdFromElement(event.currentTarget);
       const itemName = $(event.currentTarget).find('.shopping-item').val();
-      store.findAndUpdateName(id, itemName);
-      render();
+      api.updateItem(id, {name: itemName}, () => {
+        store.findAndUpdate(id, {name: itemName});
+        render();
+      }, handleError);
     });
   }
   
