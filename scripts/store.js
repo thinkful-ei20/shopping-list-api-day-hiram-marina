@@ -30,6 +30,7 @@ const store = (function(){
 
   return {
     items: [],
+    error: null,
     hideCheckedItems: false,
     searchTerm: '',
 

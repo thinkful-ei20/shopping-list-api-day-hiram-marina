@@ -9,31 +9,34 @@ const api = (function() {
     $.getJSON(`${BASE_URL}/items`, callback);
   };
 
-  const createItem = function (name, callback){
+  const createItem = function (name, callback, errCallback){
     $.ajax({
       url: `${BASE_URL}/items`,
       method: 'post',
       contentType: 'application/json',
       data: JSON.stringify({name : name}),
-      success: callback
+      success: callback,
+      error: errCallback,
     });
   };
 
-  const updateItem = function(id, updateData, callback) {
+  const updateItem = function(id, updateData, callback, errCallback) {
     $.ajax({
       url: `${BASE_URL}/items/${id}`,
       method: 'PATCH',
       contentType: 'application/json',
       data: JSON.stringify(updateData),
       success: callback,
+      error: errCallback,
     });
   };
 
-  const deleteItem = function(id, callback) {
+  const deleteItem = function(id, callback, errCallback) {
     $.ajax({
       url: `${BASE_URL}/items/${id}`,
       method: 'DELETE',
       success: callback,
+      error: errCallback,
     });
   };
 
